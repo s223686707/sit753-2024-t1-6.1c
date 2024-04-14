@@ -12,6 +12,11 @@ pipeline {
             steps {
                 echo 'Running unit tests using JUnit and integration tests using Selenium'
             }
+            post {
+                always {
+                    sendEmailWithLog('Stage 2: Unit and Integration Tests')
+                }
+            }
         }
 
         stage('Stage 3: Code Analysis') {
@@ -23,6 +28,11 @@ pipeline {
         stage('Stage 4: Security Scan') {
             steps {
                 echo 'Performing security scan using OWASP ZAP'
+            }
+            post {
+                always {
+                    sendEmailWithLog('Stage 4: Security Scan')
+                }
             }
         }
 
@@ -40,21 +50,45 @@ pipeline {
 
         stage('Stage 7: Deploy to Production') {
             steps {
-                echo 'Deploying the application to the production server'
+                echo 'Deploying the application to the production AWS EC2 instance server '
             }
         }
     }
 
     post {
-        success {
-            mail to: 'subhashsainani4@gmail.com',
-                 subject: "Jenkins Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has completed successfully."
+        always {
+            script {
+                def emailSubject = "${currentBuild.currentResult} - ${currentBuild.fullDisplayName}"
+                def emailBody = """
+                    Pipeline Status: ${currentBuild.currentResult}
+                    Build URL: ${env.BUILD_URL}
+                """
+
+                emailext(
+                    subject: emailSubject,
+                    body: emailBody,
+                    to: 'subhashsainani4@gmail.com'
+                )
+            }
         }
-        failure {
-            mail to: 'subhashsainani4@gmail.com',
-                 subject: "Jenkins Pipeline: ${currentBuild.fullDisplayName}",
-                 body: "The pipeline has failed."
-        }
+    }
+}
+
+def sendEmailWithLog(stageName) {
+    script {
+        def emailSubject = "${currentBuild.currentResult} - ${currentBuild.fullDisplayName} - ${stageName}"
+        def emailBody = """
+            Stage: ${stageName}
+            Status: ${currentBuild.currentResult}
+            Build URL: ${env.BUILD_URL}
+            Console Output: ${currentBuild.rawBuild.getLog(200)}
+        """
+
+        emailext(
+            subject: emailSubject,
+            body: emailBody,
+            to: 'subhashsainani4@gmail.com',
+            attachLog: true
+        )
     }
 }
