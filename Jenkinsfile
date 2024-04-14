@@ -81,7 +81,7 @@ def sendEmailWithLog(stageName) {
             Stage: ${stageName}
             Status: ${currentBuild.currentResult}
             Build URL: ${env.BUILD_URL}
-            Console Output: ${currentBuild.rawBuild.log}
+            Console Output: ${currentBuild.rawBuild.getLog(200)}
         """
 
         emailext(
