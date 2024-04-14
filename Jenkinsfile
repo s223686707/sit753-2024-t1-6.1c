@@ -81,14 +81,23 @@ def sendEmailWithLog(stageName) {
             Stage: ${stageName}
             Status: ${currentBuild.currentResult}
             Build URL: ${env.BUILD_URL}
-            Console Output: ${currentBuild.rawBuild.getLog(200)}
+            Console Output: ${currentBuild.rawBuild.log}
         """
+
+        def smtpHost = "smtp.gmail.com"
+        def smtpPort = 465
+        def smtpUser = "subhashsainani4@gmail.com"
+        def smtpPass = "homp zovd gslx odpw"
 
         emailext(
             subject: emailSubject,
             body: emailBody,
             to: 'subhashsainani4@gmail.com',
-            attachLog: true
+            attachLog: true,
+            smtpHost: smtpHost,
+            smtpPort: smtpPort,
+            smtpAuthUser: smtpUser,
+            smtpAuthPassword: smtpPass
         )
     }
 }
